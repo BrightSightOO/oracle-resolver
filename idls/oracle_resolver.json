@@ -1,0 +1,90 @@
+{
+  "version": "2.2.0",
+  "name": "oracle_resolver",
+  "instructions": [
+    {
+      "name": "CreateV1",
+      "accounts": [
+        {
+          "name": "resolver",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Resolver"
+          ]
+        },
+        {
+          "name": "market",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "Market"
+          ]
+        },
+        {
+          "name": "request",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "Oracle request"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "Payer"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "System program"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 0
+      }
+    }
+  ],
+  "types": [
+    {
+      "name": "AccountType",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Uninitialized"
+          },
+          {
+            "name": "ResolverV1"
+          }
+        ]
+      }
+    }
+  ],
+  "errors": [
+    {
+      "code": 0,
+      "name": "DeserializationError",
+      "msg": "Failed to deserialize account"
+    },
+    {
+      "code": 1,
+      "name": "SerializationError",
+      "msg": "Failed to serialize account"
+    }
+  ],
+  "metadata": {
+    "origin": "shank",
+    "address": "RESwds5X9Yj1kzXkjuA5ncR8TqhHeqj7qcrUz9QM29f",
+    "binaryVersion": "0.4.2",
+    "libVersion": "0.4.2"
+  }
+}

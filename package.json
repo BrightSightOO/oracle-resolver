@@ -1,0 +1,38 @@
+{
+  "name": "root",
+  "private": true,
+  "scripts": {
+    "programs:build": "./configs/program-scripts/build.py",
+    "programs:test": "./configs/program-scripts/test.py",
+    "generate": "pnpm generate:idls && pnpm generate:clients",
+    "generate:idls": "node ./configs/shank.mjs",
+    "generate:clients": "node ./configs/codama.mjs",
+    "validator": "NODE_OPTIONS=\"--no-warnings\" amman start --config ./configs/validator.cjs",
+    "lint:eslint": "eslint . --ext js,cjs,mjs,ts --cache --cache-location ./node_modules/.cache/eslint",
+    "lint:eslint:fix": "pnpm lint:eslint --fix",
+    "lint:prettier": "prettier . \"!**/*.{js,cjs,mjs,ts}\" --cache --check",
+    "lint:prettier:fix": "prettier . \"!**/*.{js,cjs,mjs,ts}\" --cache --write",
+    "lint": "pnpm lint:eslint && pnpm lint:prettier",
+    "lint:fix": "pnpm lint:eslint:fix && pnpm lint:prettier:fix"
+  },
+  "devDependencies": {
+    "@codama/nodes-from-anchor": "^1.0.1",
+    "@codama/renderers-js-umi": "^1.1.0",
+    "@codama/renderers-rust": "^1.0.4",
+    "@metaplex-foundation/amman": "^0.12.1",
+    "@metaplex-foundation/shank-js": "^0.1.7",
+    "@types/eslint": "^8.56.12",
+    "@typescript-eslint/eslint-plugin": "^8.15.0",
+    "@typescript-eslint/parser": "^8.15.0",
+    "codama": "^1.1.0",
+    "colorette": "^2.0.20",
+    "eslint": "^8.57.1",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-import-resolver-typescript": "^3.6.3",
+    "eslint-plugin-eslint-comments": "^3.2.0",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "prettier": "^3.3.3",
+    "typescript": "^5.6.3"
+  }
+}

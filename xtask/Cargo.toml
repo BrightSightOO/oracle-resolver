@@ -1,0 +1,12 @@
+[package]
+name = "xtask"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+include-idl = { workspace = true, features = ["parse"] }
+security-txt = { workspace = true, features = ["parse"] }
+
+anyhow = "1.0"
+clap = { version = "4.5", features = ["derive"] }
