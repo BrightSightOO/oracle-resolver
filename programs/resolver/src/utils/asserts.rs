@@ -2,6 +2,7 @@ use solana_program::account_info::AccountInfo;
 use solana_program::program_error::ProgramError;
 use solana_program::pubkey::Pubkey;
 use solana_program::system_program;
+use solana_utils::log;
 
 pub fn assert_token_program(pubkey: &Pubkey) -> Result<(), ProgramError> {
     if !solana_utils::pubkeys_eq(pubkey, &cpi::spl::TOKEN_ID)

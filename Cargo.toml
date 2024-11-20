@@ -17,6 +17,8 @@ num-derive = "0.4.2"
 
 cpi = { path = "crates/cpi" }
 
+optimistic-oracle = { git = "https://github.com/BrightSightOO/oracle-be", rev = "5c48af6" }
+
 borsh-size = { git = "https://github.com/Hedgehog-Markets/solana-utils", rev = "474fbbc" }
 include-idl = { git = "https://github.com/Hedgehog-Markets/solana-utils", rev = "474fbbc" }
 security-txt = { git = "https://github.com/Hedgehog-Markets/solana-utils", rev = "474fbbc" }

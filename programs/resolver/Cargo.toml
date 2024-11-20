@@ -13,6 +13,7 @@ no-entrypoint = []
 
 [dependencies]
 cpi = { workspace = true }
+optimistic-oracle = { workspace = true }
 
 borsh-size = { workspace = true }
 include-idl = { workspace = true }

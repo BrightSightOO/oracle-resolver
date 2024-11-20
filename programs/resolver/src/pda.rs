@@ -23,6 +23,7 @@ macro_rules! pdas {
 
                 use solana_program::program_error::ProgramError;
                 use solana_program::pubkey::Pubkey;
+                use solana_utils::log;
 
                 pub const PREFIX_SEED: &str = stringify!($name);
 

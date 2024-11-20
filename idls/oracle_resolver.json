@@ -53,6 +53,30 @@
       }
     }
   ],
+  "accounts": [
+    {
+      "name": "ResolverV1",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "accountType",
+            "type": {
+              "defined": "AccountType"
+            }
+          },
+          {
+            "name": "market",
+            "type": "publicKey"
+          },
+          {
+            "name": "request",
+            "type": "publicKey"
+          }
+        ]
+      }
+    }
+  ],
   "types": [
     {
       "name": "AccountType",
@@ -79,6 +103,11 @@
       "code": 1,
       "name": "SerializationError",
       "msg": "Failed to serialize account"
+    },
+    {
+      "code": 2,
+      "name": "InvalidRequestKind",
+      "msg": "Invalid request kind"
     }
   ],
   "metadata": {

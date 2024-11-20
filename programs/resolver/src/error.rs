@@ -1,6 +1,7 @@
 use num_derive::FromPrimitive;
 use solana_program::decode_error::DecodeError;
 use solana_program::program_error::{PrintProgramError, ProgramError};
+use solana_utils::log;
 use thiserror::Error;
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Error, FromPrimitive)]
@@ -10,6 +11,9 @@ pub enum ResolverError {
 
     #[error("Failed to serialize account")]
     SerializationError,
+
+    #[error("Invalid request kind")]
+    InvalidRequestKind,
 }
 
 impl PrintProgramError for ResolverError {

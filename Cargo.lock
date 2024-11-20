@@ -1355,6 +1355,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "optimistic-oracle"
+version = "0.0.0"
+source = "git+https://github.com/BrightSightOO/oracle-be?rev=5c48af6#5c48af6e95a9d947fd61f6962a7ddf0c0714245f"
+dependencies = [
+ "borsh 0.10.4",
+ "borsh 1.5.3",
+ "num-derive",
+ "num-traits",
+ "solana-program",
+ "thiserror 1.0.69",
+]
+
+[[package]]
 name = "oracle-resolver"
 version = "0.0.0"
 dependencies = [
@@ -1599,6 +1612,7 @@ dependencies = [
  "include-idl",
  "num-derive",
  "num-traits",
+ "optimistic-oracle",
  "security-txt",
  "shank",
  "solana-program",

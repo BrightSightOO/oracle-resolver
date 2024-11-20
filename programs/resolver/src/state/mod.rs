@@ -11,9 +11,13 @@ use num_traits::FromPrimitive;
 use solana_program::account_info::AccountInfo;
 use solana_program::program_error::ProgramError;
 use solana_program::pubkey::Pubkey;
-use solana_utils::VariantName;
+use solana_utils::{log, VariantName};
 
 use crate::error::ResolverError;
+
+mod resolver;
+
+pub use self::resolver::*;
 
 #[derive(
     Clone,
