@@ -27,6 +27,7 @@ import {
 import {
   mapSerializer,
   publicKey as publicKeySerializer,
+  string,
   struct,
 } from "@metaplex-foundation/umi/serializers";
 
@@ -135,4 +136,40 @@ export function getResolverV1GpaBuilder(context: Pick<Context, "rpc" | "programs
 
 export function getResolverV1Size(): number {
   return 65;
+}
+
+export function findResolverV1Pda(
+  context: Pick<Context, "eddsa" | "programs">,
+  seeds: {
+    /** The address of the market to resolve */
+    market: PublicKey;
+    /** The address of the oracle request used to source outcome */
+    request: PublicKey;
+  },
+): Pda {
+  const programId = context.programs.getPublicKey(
+    "oracleResolver",
+    "RESwds5X9Yj1kzXkjuA5ncR8TqhHeqj7qcrUz9QM29f",
+  );
+  return context.eddsa.findPda(programId, [
+    string({ size: "variable" }).serialize("resolver"),
+    publicKeySerializer().serialize(seeds.market),
+    publicKeySerializer().serialize(seeds.request),
+  ]);
+}
+
+export async function fetchResolverV1FromSeeds(
+  context: Pick<Context, "eddsa" | "programs" | "rpc">,
+  seeds: Parameters<typeof findResolverV1Pda>[1],
+  options?: RpcGetAccountOptions,
+): Promise<ResolverV1> {
+  return fetchResolverV1(context, findResolverV1Pda(context, seeds), options);
+}
+
+export async function safeFetchResolverV1FromSeeds(
+  context: Pick<Context, "eddsa" | "programs" | "rpc">,
+  seeds: Parameters<typeof findResolverV1Pda>[1],
+  options?: RpcGetAccountOptions,
+): Promise<ResolverV1 | null> {
+  return safeFetchResolverV1(context, findResolverV1Pda(context, seeds), options);
 }

@@ -4,22 +4,27 @@ use solana_program::pubkey::Pubkey;
 use solana_program::system_program;
 use solana_utils::log;
 
-pub fn assert_token_program(pubkey: &Pubkey) -> Result<(), ProgramError> {
-    if !solana_utils::pubkeys_eq(pubkey, &cpi::spl::TOKEN_ID)
-        && !solana_utils::pubkeys_eq(pubkey, &cpi::spl::TOKEN_2022_ID)
-    {
-        log!("Error: Incorrect address for token program");
-        return Err(ProgramError::IncorrectProgramId);
-    }
-    Ok(())
+macro_rules! programs {
+    ($(
+        $desc:literal: $fn_name:ident($id:expr $(, $extra_id:expr)* $(,)?)
+    );* $(;)?) => {
+        $(
+            pub fn $fn_name(pubkey: &Pubkey) -> Result<(), ProgramError> {
+                if !solana_utils::pubkeys_eq(pubkey, &$id) $(&& !solana_utils::pubkeys_eq(pubkey, &$extra_id))* {
+                    solana_utils::log!(concat!("Error: Incorrect address for ", $desc, " program"));
+                    return Err(ProgramError::IncorrectProgramId);
+                }
+                Ok(())
+            }
+        )*
+    };
 }
 
-pub fn assert_system_program(pubkey: &Pubkey) -> Result<(), ProgramError> {
-    if !solana_utils::pubkeys_eq(pubkey, &system_program::ID) {
-        log!("Error: Incorrect address for system program");
-        return Err(ProgramError::IncorrectProgramId);
-    }
-    Ok(())
+programs! {
+    "P2P": assert_p2p_program(cpi::hpl::p2p::ID);
+
+    "token": assert_token_program(cpi::spl::TOKEN_ID, cpi::spl::TOKEN_2022_ID);
+    "system": assert_system_program(system_program::ID);
 }
 
 pub fn assert_signer(account_info: &AccountInfo) -> Result<(), ProgramError> {

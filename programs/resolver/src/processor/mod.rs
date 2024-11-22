@@ -5,8 +5,10 @@ use solana_program::pubkey::Pubkey;
 use solana_utils::{log, VariantName};
 
 mod create_v1;
+mod resolve_p2p_v1;
 
 pub(crate) use self::create_v1::*;
+pub(crate) use self::resolve_p2p_v1::*;
 
 pub fn process_instruction<'a>(
     program_id: &'a Pubkey,
@@ -21,5 +23,6 @@ pub fn process_instruction<'a>(
 
     match instruction {
         I::CreateV1 => create_v1(program_id, accounts),
+        I::ResolveP2pV1 => resolve_p2p_v1(program_id, accounts),
     }
 }

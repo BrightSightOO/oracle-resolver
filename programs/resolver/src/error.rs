@@ -14,6 +14,9 @@ pub enum ResolverError {
 
     #[error("Invalid request kind")]
     InvalidRequestKind,
+
+    #[error("Request is not resolved")]
+    RequestNotResolved,
 }
 
 impl PrintProgramError for ResolverError {

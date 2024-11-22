@@ -19,6 +19,9 @@ pub enum OracleResolverError {
     /// 2 - Invalid request kind
     #[error("Invalid request kind")]
     InvalidRequestKind = 0x2,
+    /// 3 - Request is not resolved
+    #[error("Request is not resolved")]
+    RequestNotResolved = 0x3,
 }
 
 impl solana_program::program_error::PrintProgramError for OracleResolverError {

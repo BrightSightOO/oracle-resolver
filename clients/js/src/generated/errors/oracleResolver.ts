@@ -53,6 +53,19 @@ export class InvalidRequestKindError extends ProgramError {
 codeToErrorMap.set(0x2, InvalidRequestKindError);
 nameToErrorMap.set("InvalidRequestKind", InvalidRequestKindError);
 
+/** RequestNotResolved: Request is not resolved */
+export class RequestNotResolvedError extends ProgramError {
+  override readonly name: string = "RequestNotResolved";
+
+  readonly code: number = 0x3; // 3
+
+  constructor(program: Program, cause?: Error) {
+    super("Request is not resolved", program, cause);
+  }
+}
+codeToErrorMap.set(0x3, RequestNotResolvedError);
+nameToErrorMap.set("RequestNotResolved", RequestNotResolvedError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

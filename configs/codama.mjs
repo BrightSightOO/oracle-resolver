@@ -28,10 +28,42 @@ console.log("generating clients...");
 const codama = k.createFromRoot(rootNodeFromAnchor(idl));
 
 // Update accounts.
-codama.update(k.updateAccountsVisitor({}));
+codama.update(
+  k.updateAccountsVisitor({
+    ResolverV1: {
+      seeds: [
+        k.constantPdaSeedNodeFromString("utf8", "resolver"),
+        k.variablePdaSeedNode(
+          "market",
+          k.publicKeyTypeNode(),
+          "The address of the market to resolve",
+        ),
+        k.variablePdaSeedNode(
+          "request",
+          k.publicKeyTypeNode(),
+          "The address of the oracle request used to source outcome",
+        ),
+      ],
+    },
+  }),
+);
 
 // Set default values for instruction accounts.
-codama.update(k.setInstructionAccountDefaultValuesVisitor([]));
+codama.update(
+  k.setInstructionAccountDefaultValuesVisitor([
+    {
+      account: "resolver",
+      defaultValue: k.pdaValueNode("resolverV1", [
+        k.pdaSeedValueNode("market", k.accountValueNode("market")),
+        k.pdaSeedValueNode("request", k.accountValueNode("request")),
+      ]),
+    },
+    {
+      account: "p2pProgram",
+      defaultValue: k.publicKeyValueNode("P2PototC41acvjMc9cvAoRjFjtaRD5Keo9PvNJfRwf3", "hplP2p"),
+    },
+  ]),
+);
 
 // Update instructions.
 codama.update(k.updateInstructionsVisitor({}));

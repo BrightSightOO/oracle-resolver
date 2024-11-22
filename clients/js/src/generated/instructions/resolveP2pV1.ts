@@ -7,7 +7,7 @@
  */
 
 import type { ResolvedAccount, ResolvedAccountsWithIndices } from "../shared";
-import type { Context, Pda, PublicKey, Signer, TransactionBuilder } from "@metaplex-foundation/umi";
+import type { Context, Pda, PublicKey, TransactionBuilder } from "@metaplex-foundation/umi";
 import type { Serializer } from "@metaplex-foundation/umi/serializers";
 
 import { transactionBuilder } from "@metaplex-foundation/umi";
@@ -17,40 +17,38 @@ import { findResolverV1Pda } from "../accounts";
 import { expectPublicKey, getAccountMetasAndSigners } from "../shared";
 
 // Accounts.
-export type CreateV1InstructionAccounts = {
+export type ResolveP2pV1InstructionAccounts = {
   /** Resolver */
   resolver?: PublicKey | Pda;
   /** Market */
   market: PublicKey | Pda;
   /** Oracle request */
   request: PublicKey | Pda;
-  /** Payer */
-  payer?: Signer;
-  /** System program */
-  systemProgram?: PublicKey | Pda;
+  /** HPL P2P program */
+  p2pProgram?: PublicKey | Pda;
 };
 
 // Data.
-export type CreateV1InstructionData = { discriminator: number };
+export type ResolveP2pV1InstructionData = { discriminator: number };
 
-export type CreateV1InstructionDataArgs = {};
+export type ResolveP2pV1InstructionDataArgs = {};
 
-export function getCreateV1InstructionDataSerializer(): Serializer<
-  CreateV1InstructionDataArgs,
-  CreateV1InstructionData
+export function getResolveP2pV1InstructionDataSerializer(): Serializer<
+  ResolveP2pV1InstructionDataArgs,
+  ResolveP2pV1InstructionData
 > {
-  return mapSerializer<CreateV1InstructionDataArgs, any, CreateV1InstructionData>(
-    struct<CreateV1InstructionData>([["discriminator", u8()]], {
-      description: "CreateV1InstructionData",
+  return mapSerializer<ResolveP2pV1InstructionDataArgs, any, ResolveP2pV1InstructionData>(
+    struct<ResolveP2pV1InstructionData>([["discriminator", u8()]], {
+      description: "ResolveP2pV1InstructionData",
     }),
-    (value) => ({ ...value, discriminator: 0 }),
+    (value) => ({ ...value, discriminator: 1 }),
   );
 }
 
 // Instruction.
-export function createV1(
-  context: Pick<Context, "eddsa" | "payer" | "programs">,
-  input: CreateV1InstructionAccounts,
+export function resolveP2pV1(
+  context: Pick<Context, "eddsa" | "programs">,
+  input: ResolveP2pV1InstructionAccounts,
 ): TransactionBuilder {
   // Program ID.
   const programId = context.programs.getPublicKey(
@@ -62,12 +60,12 @@ export function createV1(
   const resolvedAccounts = {
     resolver: {
       index: 0,
-      isWritable: true as boolean,
+      isWritable: false as boolean,
       value: input.resolver ?? null,
     },
     market: {
       index: 1,
-      isWritable: false as boolean,
+      isWritable: true as boolean,
       value: input.market ?? null,
     },
     request: {
@@ -75,15 +73,10 @@ export function createV1(
       isWritable: false as boolean,
       value: input.request ?? null,
     },
-    payer: {
+    p2pProgram: {
       index: 3,
-      isWritable: true as boolean,
-      value: input.payer ?? null,
-    },
-    systemProgram: {
-      index: 4,
       isWritable: false as boolean,
-      value: input.systemProgram ?? null,
+      value: input.p2pProgram ?? null,
     },
   } satisfies ResolvedAccountsWithIndices;
 
@@ -94,15 +87,12 @@ export function createV1(
       request: expectPublicKey(resolvedAccounts.request.value),
     });
   }
-  if (!resolvedAccounts.payer.value) {
-    resolvedAccounts.payer.value = context.payer;
-  }
-  if (!resolvedAccounts.systemProgram.value) {
-    resolvedAccounts.systemProgram.value = context.programs.getPublicKey(
-      "splSystem",
-      "11111111111111111111111111111111",
+  if (!resolvedAccounts.p2pProgram.value) {
+    resolvedAccounts.p2pProgram.value = context.programs.getPublicKey(
+      "hplP2p",
+      "P2PototC41acvjMc9cvAoRjFjtaRD5Keo9PvNJfRwf3",
     );
-    resolvedAccounts.systemProgram.isWritable = false;
+    resolvedAccounts.p2pProgram.isWritable = false;
   }
 
   // Accounts in order.
@@ -114,7 +104,7 @@ export function createV1(
   const [keys, signers] = getAccountMetasAndSigners(orderedAccounts, "programId", programId);
 
   // Data.
-  const data = getCreateV1InstructionDataSerializer().serialize({});
+  const data = getResolveP2pV1InstructionDataSerializer().serialize({});
 
   // Bytes Created On Chain.
   const bytesCreatedOnChain = 0;

@@ -7,3 +7,4 @@
  */
 
 export * from "./createV1";
+export * from "./resolveP2pV1";

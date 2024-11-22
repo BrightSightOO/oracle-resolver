@@ -6,5 +6,7 @@
 //!
 
 pub(crate) mod r#create_v1;
+pub(crate) mod r#resolve_p2p_v1;
 
 pub use self::r#create_v1::*;
+pub use self::r#resolve_p2p_v1::*;
