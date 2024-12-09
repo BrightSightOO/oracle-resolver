@@ -22,6 +22,8 @@ macro_rules! programs {
 
 programs! {
     "P2P": assert_p2p_program(cpi::hpl::p2p::ID);
+    "parimutuel": assert_parimutuel_program(cpi::hpl::parimutuel::ID);
+    "parimutuel (LULO)": assert_parimutuel_lulo_program(cpi::hpl::parimutuel_lulo::ID);
 
     "outcome tokens": assert_outcome_tokens_program(cpi::legacy::amm::OUTCOME_TOKENS_ID);
 

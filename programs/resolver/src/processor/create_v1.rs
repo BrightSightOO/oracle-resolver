@@ -9,10 +9,20 @@ use solana_utils::log;
 
 use crate::error::ResolverError;
 use crate::instruction::accounts::CreateV1Accounts;
-use crate::state::{InitAccount, InitContext, InitResolver, ResolverV1};
+use crate::state::{InitAccount, InitContext, InitResolver, MarketProgram, ResolverV1};
 use crate::{pda, utils};
 
-pub fn create_v1<'a>(program_id: &'a Pubkey, accounts: &'a [AccountInfo<'a>]) -> ProgramResult {
+#[derive(Clone, Copy, BorshDeserialize)]
+pub struct CreateV1Args {
+    /// The market program the resolver is for.
+    pub program: MarketProgram,
+}
+
+pub fn create_v1<'a>(
+    program_id: &'a Pubkey,
+    accounts: &'a [AccountInfo<'a>],
+    args: CreateV1Args,
+) -> ProgramResult {
     let ctx = CreateV1Accounts::context(accounts)?;
 
     // Guard signatures.
@@ -34,7 +44,7 @@ pub fn create_v1<'a>(program_id: &'a Pubkey, accounts: &'a [AccountInfo<'a>]) ->
             ResolverError::DeserializationError
         })?;
 
-        if request.kind == RequestKind::YesNo {
+        if !is_request_kind_valid(args.program, request.kind) {
             return Err(ResolverError::InvalidRequestKind.into());
         }
     }
@@ -55,6 +65,7 @@ pub fn create_v1<'a>(program_id: &'a Pubkey, accounts: &'a [AccountInfo<'a>]) ->
         ResolverV1::init(InitResolver {
             market: *ctx.accounts.market.key,
             request: *ctx.accounts.request.key,
+            program: args.program,
         })
         .save(InitContext {
             account: ctx.accounts.resolver,
@@ -66,4 +77,13 @@ pub fn create_v1<'a>(program_id: &'a Pubkey, accounts: &'a [AccountInfo<'a>]) ->
     }
 
     Ok(())
+}
+
+fn is_request_kind_valid(program: MarketProgram, kind: RequestKind) -> bool {
+    use {MarketProgram as P, RequestKind as K};
+
+    match program {
+        P::P2p | P::LegacyAmm => matches!(kind, K::YesNo),
+        P::Parimutuel | P::ParimutuelLulo => matches!(kind, K::Options { .. }),
+    }
 }

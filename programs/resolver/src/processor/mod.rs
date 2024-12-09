@@ -7,10 +7,14 @@ use solana_utils::{log, VariantName};
 mod create_v1;
 mod resolve_legacy_amm_v1;
 mod resolve_p2p_v1;
+mod resolve_parimutuel_lulo_v1;
+mod resolve_parimutuel_v1;
 
 pub(crate) use self::create_v1::*;
 pub(crate) use self::resolve_legacy_amm_v1::*;
 pub(crate) use self::resolve_p2p_v1::*;
+pub(crate) use self::resolve_parimutuel_lulo_v1::*;
+pub(crate) use self::resolve_parimutuel_v1::*;
 
 pub fn process_instruction<'a>(
     program_id: &'a Pubkey,
@@ -24,8 +28,10 @@ pub fn process_instruction<'a>(
     log!("Instruction: {}", instruction.variant_name());
 
     match instruction {
-        I::CreateV1 => create_v1(program_id, accounts),
+        I::CreateV1(args) => create_v1(program_id, accounts, args),
         I::ResolveP2pV1 => resolve_p2p_v1(program_id, accounts),
         I::ResolveLegacyAmmV1 => resolve_legacy_amm_v1(program_id, accounts),
+        I::ResolveParimutuelV1 => resolve_parimutuel_v1(program_id, accounts),
+        I::ResolveParimutuelLuloV1 => resolve_parimutuel_lulo_v1(program_id, accounts),
     }
 }

@@ -1359,7 +1359,7 @@ dependencies = [
 [[package]]
 name = "optimistic-oracle"
 version = "0.0.0"
-source = "git+https://github.com/BrightSightOO/oracle-be?rev=d6c8a53#d6c8a532a626686dd6ede4a12e3096a03b31b376"
+source = "git+https://github.com/BrightSightOO/oracle-be?rev=4857d50#4857d5047945c58a4c0507b0302584564c05a25f"
 dependencies = [
  "borsh 0.10.4",
  "borsh 1.5.3",
