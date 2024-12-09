@@ -5,49 +5,39 @@
 //! <https://github.com/codama-idl/codama>
 //!
 
-use crate::generated::types::MarketProgram;
 use borsh::{BorshDeserialize, BorshSerialize};
 
 /// Accounts.
-pub struct CreateV1 {
+pub struct ResolveLegacyAmmV1 {
     /// Resolver
     pub resolver: solana_program::pubkey::Pubkey,
     /// Market
     pub market: solana_program::pubkey::Pubkey,
     /// Oracle request
     pub request: solana_program::pubkey::Pubkey,
-    /// Payer
-    pub payer: solana_program::pubkey::Pubkey,
-    /// System program
-    pub system_program: solana_program::pubkey::Pubkey,
+    /// Legacy outcome tokens program
+    pub outcome_tokens_program: solana_program::pubkey::Pubkey,
 }
 
-impl CreateV1 {
-    pub fn instruction(
-        &self,
-        args: CreateV1InstructionArgs,
-    ) -> solana_program::instruction::Instruction {
-        self.instruction_with_remaining_accounts(args, &[])
+impl ResolveLegacyAmmV1 {
+    pub fn instruction(&self) -> solana_program::instruction::Instruction {
+        self.instruction_with_remaining_accounts(&[])
     }
     #[allow(clippy::vec_init_then_push)]
     pub fn instruction_with_remaining_accounts(
         &self,
-        args: CreateV1InstructionArgs,
         remaining_accounts: &[solana_program::instruction::AccountMeta],
     ) -> solana_program::instruction::Instruction {
-        let mut accounts = Vec::with_capacity(5 + remaining_accounts.len());
-        accounts.push(solana_program::instruction::AccountMeta::new(self.resolver, false));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(self.market, false));
+        let mut accounts = Vec::with_capacity(4 + remaining_accounts.len());
+        accounts.push(solana_program::instruction::AccountMeta::new_readonly(self.resolver, false));
+        accounts.push(solana_program::instruction::AccountMeta::new(self.market, false));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(self.request, false));
-        accounts.push(solana_program::instruction::AccountMeta::new(self.payer, true));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            self.system_program,
+            self.outcome_tokens_program,
             false,
         ));
         accounts.extend_from_slice(remaining_accounts);
-        let mut data = CreateV1InstructionData::new().try_to_vec().unwrap();
-        let mut args = args.try_to_vec().unwrap();
-        data.append(&mut args);
+        let data = ResolveLegacyAmmV1InstructionData::new().try_to_vec().unwrap();
 
         solana_program::instruction::Instruction {
             program_id: crate::ORACLE_RESOLVER_ID,
@@ -58,49 +48,40 @@ impl CreateV1 {
 }
 
 #[derive(BorshDeserialize, BorshSerialize)]
-pub struct CreateV1InstructionData {
+pub struct ResolveLegacyAmmV1InstructionData {
     discriminator: u8,
 }
 
-impl CreateV1InstructionData {
+impl ResolveLegacyAmmV1InstructionData {
     pub fn new() -> Self {
-        Self { discriminator: 0 }
+        Self { discriminator: 2 }
     }
 }
 
-impl Default for CreateV1InstructionData {
+impl Default for ResolveLegacyAmmV1InstructionData {
     fn default() -> Self {
         Self::new()
     }
 }
 
-#[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct CreateV1InstructionArgs {
-    pub program: MarketProgram,
-}
-
-/// Instruction builder for `CreateV1`.
+/// Instruction builder for `ResolveLegacyAmmV1`.
 ///
 /// ### Accounts:
 ///
-///   0. `[writable]` resolver
-///   1. `[]` market
+///   0. `[]` resolver
+///   1. `[writable]` market
 ///   2. `[]` request
-///   3. `[writable, signer]` payer
-///   4. `[optional]` system_program (default to `11111111111111111111111111111111`)
+///   3. `[]` outcome_tokens_program
 #[derive(Clone, Debug, Default)]
-pub struct CreateV1Builder {
+pub struct ResolveLegacyAmmV1Builder {
     resolver: Option<solana_program::pubkey::Pubkey>,
     market: Option<solana_program::pubkey::Pubkey>,
     request: Option<solana_program::pubkey::Pubkey>,
-    payer: Option<solana_program::pubkey::Pubkey>,
-    system_program: Option<solana_program::pubkey::Pubkey>,
-    program: Option<MarketProgram>,
+    outcome_tokens_program: Option<solana_program::pubkey::Pubkey>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
-impl CreateV1Builder {
+impl ResolveLegacyAmmV1Builder {
     pub fn new() -> Self {
         Self::default()
     }
@@ -122,22 +103,13 @@ impl CreateV1Builder {
         self.request = Some(request);
         self
     }
-    /// Payer
+    /// Legacy outcome tokens program
     #[inline(always)]
-    pub fn payer(&mut self, payer: solana_program::pubkey::Pubkey) -> &mut Self {
-        self.payer = Some(payer);
-        self
-    }
-    /// `[optional account, default to '11111111111111111111111111111111']`
-    /// System program
-    #[inline(always)]
-    pub fn system_program(&mut self, system_program: solana_program::pubkey::Pubkey) -> &mut Self {
-        self.system_program = Some(system_program);
-        self
-    }
-    #[inline(always)]
-    pub fn program(&mut self, program: MarketProgram) -> &mut Self {
-        self.program = Some(program);
+    pub fn outcome_tokens_program(
+        &mut self,
+        outcome_tokens_program: solana_program::pubkey::Pubkey,
+    ) -> &mut Self {
+        self.outcome_tokens_program = Some(outcome_tokens_program);
         self
     }
     /// Add an additional account to the instruction.
@@ -160,38 +132,33 @@ impl CreateV1Builder {
     }
     #[allow(clippy::clone_on_copy)]
     pub fn instruction(&self) -> solana_program::instruction::Instruction {
-        let accounts = CreateV1 {
+        let accounts = ResolveLegacyAmmV1 {
             resolver: self.resolver.expect("resolver is not set"),
             market: self.market.expect("market is not set"),
             request: self.request.expect("request is not set"),
-            payer: self.payer.expect("payer is not set"),
-            system_program: self
-                .system_program
-                .unwrap_or(solana_program::pubkey!("11111111111111111111111111111111")),
+            outcome_tokens_program: self
+                .outcome_tokens_program
+                .expect("outcome_tokens_program is not set"),
         };
-        let args =
-            CreateV1InstructionArgs { program: self.program.clone().expect("program is not set") };
 
-        accounts.instruction_with_remaining_accounts(args, &self.__remaining_accounts)
+        accounts.instruction_with_remaining_accounts(&self.__remaining_accounts)
     }
 }
 
-/// `create_v1` CPI accounts.
-pub struct CreateV1CpiAccounts<'a, 'b> {
+/// `resolve_legacy_amm_v1` CPI accounts.
+pub struct ResolveLegacyAmmV1CpiAccounts<'a, 'b> {
     /// Resolver
     pub resolver: &'b solana_program::account_info::AccountInfo<'a>,
     /// Market
     pub market: &'b solana_program::account_info::AccountInfo<'a>,
     /// Oracle request
     pub request: &'b solana_program::account_info::AccountInfo<'a>,
-    /// Payer
-    pub payer: &'b solana_program::account_info::AccountInfo<'a>,
-    /// System program
-    pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
+    /// Legacy outcome tokens program
+    pub outcome_tokens_program: &'b solana_program::account_info::AccountInfo<'a>,
 }
 
-/// `create_v1` CPI instruction.
-pub struct CreateV1Cpi<'a, 'b> {
+/// `resolve_legacy_amm_v1` CPI instruction.
+pub struct ResolveLegacyAmmV1Cpi<'a, 'b> {
     /// The program to invoke.
     pub __program: &'b solana_program::account_info::AccountInfo<'a>,
     /// Resolver
@@ -200,28 +167,21 @@ pub struct CreateV1Cpi<'a, 'b> {
     pub market: &'b solana_program::account_info::AccountInfo<'a>,
     /// Oracle request
     pub request: &'b solana_program::account_info::AccountInfo<'a>,
-    /// Payer
-    pub payer: &'b solana_program::account_info::AccountInfo<'a>,
-    /// System program
-    pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The arguments for the instruction.
-    pub __args: CreateV1InstructionArgs,
+    /// Legacy outcome tokens program
+    pub outcome_tokens_program: &'b solana_program::account_info::AccountInfo<'a>,
 }
 
-impl<'a, 'b> CreateV1Cpi<'a, 'b> {
+impl<'a, 'b> ResolveLegacyAmmV1Cpi<'a, 'b> {
     pub fn new(
         program: &'b solana_program::account_info::AccountInfo<'a>,
-        accounts: CreateV1CpiAccounts<'a, 'b>,
-        args: CreateV1InstructionArgs,
+        accounts: ResolveLegacyAmmV1CpiAccounts<'a, 'b>,
     ) -> Self {
         Self {
             __program: program,
             resolver: accounts.resolver,
             market: accounts.market,
             request: accounts.request,
-            payer: accounts.payer,
-            system_program: accounts.system_program,
-            __args: args,
+            outcome_tokens_program: accounts.outcome_tokens_program,
         }
     }
     #[inline(always)]
@@ -249,15 +209,16 @@ impl<'a, 'b> CreateV1Cpi<'a, 'b> {
         signers_seeds: &[&[&[u8]]],
         remaining_accounts: &[(&'b solana_program::account_info::AccountInfo<'a>, bool, bool)],
     ) -> solana_program::entrypoint::ProgramResult {
-        let mut accounts = Vec::with_capacity(5 + remaining_accounts.len());
-        accounts.push(solana_program::instruction::AccountMeta::new(*self.resolver.key, false));
-        accounts
-            .push(solana_program::instruction::AccountMeta::new_readonly(*self.market.key, false));
+        let mut accounts = Vec::with_capacity(4 + remaining_accounts.len());
+        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            *self.resolver.key,
+            false,
+        ));
+        accounts.push(solana_program::instruction::AccountMeta::new(*self.market.key, false));
         accounts
             .push(solana_program::instruction::AccountMeta::new_readonly(*self.request.key, false));
-        accounts.push(solana_program::instruction::AccountMeta::new(*self.payer.key, true));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            *self.system_program.key,
+            *self.outcome_tokens_program.key,
             false,
         ));
         remaining_accounts.iter().for_each(|remaining_account| {
@@ -267,22 +228,19 @@ impl<'a, 'b> CreateV1Cpi<'a, 'b> {
                 is_writable: remaining_account.2,
             })
         });
-        let mut data = CreateV1InstructionData::new().try_to_vec().unwrap();
-        let mut args = self.__args.try_to_vec().unwrap();
-        data.append(&mut args);
+        let data = ResolveLegacyAmmV1InstructionData::new().try_to_vec().unwrap();
 
         let instruction = solana_program::instruction::Instruction {
             program_id: crate::ORACLE_RESOLVER_ID,
             accounts,
             data,
         };
-        let mut account_infos = Vec::with_capacity(6 + remaining_accounts.len());
+        let mut account_infos = Vec::with_capacity(5 + remaining_accounts.len());
         account_infos.push(self.__program.clone());
         account_infos.push(self.resolver.clone());
         account_infos.push(self.market.clone());
         account_infos.push(self.request.clone());
-        account_infos.push(self.payer.clone());
-        account_infos.push(self.system_program.clone());
+        account_infos.push(self.outcome_tokens_program.clone());
         remaining_accounts
             .iter()
             .for_each(|remaining_account| account_infos.push(remaining_account.0.clone()));
@@ -295,30 +253,27 @@ impl<'a, 'b> CreateV1Cpi<'a, 'b> {
     }
 }
 
-/// Instruction builder for `CreateV1` via CPI.
+/// Instruction builder for `ResolveLegacyAmmV1` via CPI.
 ///
 /// ### Accounts:
 ///
-///   0. `[writable]` resolver
-///   1. `[]` market
+///   0. `[]` resolver
+///   1. `[writable]` market
 ///   2. `[]` request
-///   3. `[writable, signer]` payer
-///   4. `[]` system_program
+///   3. `[]` outcome_tokens_program
 #[derive(Clone, Debug)]
-pub struct CreateV1CpiBuilder<'a, 'b> {
-    instruction: Box<CreateV1CpiBuilderInstruction<'a, 'b>>,
+pub struct ResolveLegacyAmmV1CpiBuilder<'a, 'b> {
+    instruction: Box<ResolveLegacyAmmV1CpiBuilderInstruction<'a, 'b>>,
 }
 
-impl<'a, 'b> CreateV1CpiBuilder<'a, 'b> {
+impl<'a, 'b> ResolveLegacyAmmV1CpiBuilder<'a, 'b> {
     pub fn new(program: &'b solana_program::account_info::AccountInfo<'a>) -> Self {
-        let instruction = Box::new(CreateV1CpiBuilderInstruction {
+        let instruction = Box::new(ResolveLegacyAmmV1CpiBuilderInstruction {
             __program: program,
             resolver: None,
             market: None,
             request: None,
-            payer: None,
-            system_program: None,
-            program: None,
+            outcome_tokens_program: None,
             __remaining_accounts: Vec::new(),
         });
         Self { instruction }
@@ -350,24 +305,13 @@ impl<'a, 'b> CreateV1CpiBuilder<'a, 'b> {
         self.instruction.request = Some(request);
         self
     }
-    /// Payer
+    /// Legacy outcome tokens program
     #[inline(always)]
-    pub fn payer(&mut self, payer: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
-        self.instruction.payer = Some(payer);
-        self
-    }
-    /// System program
-    #[inline(always)]
-    pub fn system_program(
+    pub fn outcome_tokens_program(
         &mut self,
-        system_program: &'b solana_program::account_info::AccountInfo<'a>,
+        outcome_tokens_program: &'b solana_program::account_info::AccountInfo<'a>,
     ) -> &mut Self {
-        self.instruction.system_program = Some(system_program);
-        self
-    }
-    #[inline(always)]
-    pub fn program(&mut self, program: MarketProgram) -> &mut Self {
-        self.instruction.program = Some(program);
+        self.instruction.outcome_tokens_program = Some(outcome_tokens_program);
         self
     }
     /// Add an additional account to the instruction.
@@ -403,10 +347,7 @@ impl<'a, 'b> CreateV1CpiBuilder<'a, 'b> {
         &self,
         signers_seeds: &[&[&[u8]]],
     ) -> solana_program::entrypoint::ProgramResult {
-        let args = CreateV1InstructionArgs {
-            program: self.instruction.program.clone().expect("program is not set"),
-        };
-        let instruction = CreateV1Cpi {
+        let instruction = ResolveLegacyAmmV1Cpi {
             __program: self.instruction.__program,
 
             resolver: self.instruction.resolver.expect("resolver is not set"),
@@ -415,10 +356,10 @@ impl<'a, 'b> CreateV1CpiBuilder<'a, 'b> {
 
             request: self.instruction.request.expect("request is not set"),
 
-            payer: self.instruction.payer.expect("payer is not set"),
-
-            system_program: self.instruction.system_program.expect("system_program is not set"),
-            __args: args,
+            outcome_tokens_program: self
+                .instruction
+                .outcome_tokens_program
+                .expect("outcome_tokens_program is not set"),
         };
         instruction.invoke_signed_with_remaining_accounts(
             signers_seeds,
@@ -428,14 +369,12 @@ impl<'a, 'b> CreateV1CpiBuilder<'a, 'b> {
 }
 
 #[derive(Clone, Debug)]
-struct CreateV1CpiBuilderInstruction<'a, 'b> {
+struct ResolveLegacyAmmV1CpiBuilderInstruction<'a, 'b> {
     __program: &'b solana_program::account_info::AccountInfo<'a>,
     resolver: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     market: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     request: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    program: Option<MarketProgram>,
+    outcome_tokens_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
     __remaining_accounts: Vec<(&'b solana_program::account_info::AccountInfo<'a>, bool, bool)>,
 }

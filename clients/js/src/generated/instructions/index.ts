@@ -7,4 +7,7 @@
  */
 
 export * from "./createV1";
+export * from "./resolveLegacyAmmV1";
 export * from "./resolveP2pV1";
+export * from "./resolveParimutuelLuloV1";
+export * from "./resolveParimutuelV1";

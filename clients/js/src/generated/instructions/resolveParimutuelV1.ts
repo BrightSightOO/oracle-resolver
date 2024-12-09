@@ -7,7 +7,6 @@
  */
 
 import type { ResolvedAccount, ResolvedAccountsWithIndices } from "../shared";
-import type { MarketProgram, MarketProgramArgs } from "../types";
 import type { Context, Pda, PublicKey, Signer, TransactionBuilder } from "@metaplex-foundation/umi";
 import type { Serializer } from "@metaplex-foundation/umi/serializers";
 
@@ -16,53 +15,54 @@ import { mapSerializer, struct, u8 } from "@metaplex-foundation/umi/serializers"
 
 import { findResolverV1Pda } from "../accounts";
 import { expectPublicKey, getAccountMetasAndSigners } from "../shared";
-import { getMarketProgramSerializer } from "../types";
 
 // Accounts.
-export type CreateV1InstructionAccounts = {
+export type ResolveParimutuelV1InstructionAccounts = {
   /** Resolver */
   resolver?: PublicKey | Pda;
   /** Market */
   market: PublicKey | Pda;
   /** Oracle request */
   request: PublicKey | Pda;
+  /** Deposit token mint */
+  mint: PublicKey | Pda;
+  /** Deposit token account */
+  deposit: PublicKey | Pda;
   /** Payer */
   payer?: Signer;
+  /** SPL token program */
+  tokenProgram?: PublicKey | Pda;
   /** System program */
   systemProgram?: PublicKey | Pda;
+  /** HPL parimutuel program */
+  parimutuelProgram: PublicKey | Pda;
 };
 
 // Data.
-export type CreateV1InstructionData = {
-  discriminator: number;
-  program: MarketProgram;
-};
+export type ResolveParimutuelV1InstructionData = { discriminator: number };
 
-export type CreateV1InstructionDataArgs = { program: MarketProgramArgs };
+export type ResolveParimutuelV1InstructionDataArgs = {};
 
-export function getCreateV1InstructionDataSerializer(): Serializer<
-  CreateV1InstructionDataArgs,
-  CreateV1InstructionData
+export function getResolveParimutuelV1InstructionDataSerializer(): Serializer<
+  ResolveParimutuelV1InstructionDataArgs,
+  ResolveParimutuelV1InstructionData
 > {
-  return mapSerializer<CreateV1InstructionDataArgs, any, CreateV1InstructionData>(
-    struct<CreateV1InstructionData>(
-      [
-        ["discriminator", u8()],
-        ["program", getMarketProgramSerializer()],
-      ],
-      { description: "CreateV1InstructionData" },
-    ),
-    (value) => ({ ...value, discriminator: 0 }),
+  return mapSerializer<
+    ResolveParimutuelV1InstructionDataArgs,
+    any,
+    ResolveParimutuelV1InstructionData
+  >(
+    struct<ResolveParimutuelV1InstructionData>([["discriminator", u8()]], {
+      description: "ResolveParimutuelV1InstructionData",
+    }),
+    (value) => ({ ...value, discriminator: 3 }),
   );
 }
 
-// Args.
-export type CreateV1InstructionArgs = CreateV1InstructionDataArgs;
-
 // Instruction.
-export function createV1(
+export function resolveParimutuelV1(
   context: Pick<Context, "eddsa" | "payer" | "programs">,
-  input: CreateV1InstructionAccounts & CreateV1InstructionArgs,
+  input: ResolveParimutuelV1InstructionAccounts,
 ): TransactionBuilder {
   // Program ID.
   const programId = context.programs.getPublicKey(
@@ -74,12 +74,12 @@ export function createV1(
   const resolvedAccounts = {
     resolver: {
       index: 0,
-      isWritable: true as boolean,
+      isWritable: false as boolean,
       value: input.resolver ?? null,
     },
     market: {
       index: 1,
-      isWritable: false as boolean,
+      isWritable: true as boolean,
       value: input.market ?? null,
     },
     request: {
@@ -87,20 +87,33 @@ export function createV1(
       isWritable: false as boolean,
       value: input.request ?? null,
     },
+    mint: { index: 3, isWritable: false as boolean, value: input.mint ?? null },
+    deposit: {
+      index: 4,
+      isWritable: true as boolean,
+      value: input.deposit ?? null,
+    },
     payer: {
-      index: 3,
+      index: 5,
       isWritable: true as boolean,
       value: input.payer ?? null,
     },
+    tokenProgram: {
+      index: 6,
+      isWritable: false as boolean,
+      value: input.tokenProgram ?? null,
+    },
     systemProgram: {
-      index: 4,
+      index: 7,
       isWritable: false as boolean,
       value: input.systemProgram ?? null,
     },
+    parimutuelProgram: {
+      index: 8,
+      isWritable: false as boolean,
+      value: input.parimutuelProgram ?? null,
+    },
   } satisfies ResolvedAccountsWithIndices;
-
-  // Arguments.
-  const resolvedArgs: CreateV1InstructionArgs = { ...input };
 
   // Default values.
   if (!resolvedAccounts.resolver.value) {
@@ -111,6 +124,13 @@ export function createV1(
   }
   if (!resolvedAccounts.payer.value) {
     resolvedAccounts.payer.value = context.payer;
+  }
+  if (!resolvedAccounts.tokenProgram.value) {
+    resolvedAccounts.tokenProgram.value = context.programs.getPublicKey(
+      "splToken",
+      "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+    );
+    resolvedAccounts.tokenProgram.isWritable = false;
   }
   if (!resolvedAccounts.systemProgram.value) {
     resolvedAccounts.systemProgram.value = context.programs.getPublicKey(
@@ -129,7 +149,7 @@ export function createV1(
   const [keys, signers] = getAccountMetasAndSigners(orderedAccounts, "programId", programId);
 
   // Data.
-  const data = getCreateV1InstructionDataSerializer().serialize(resolvedArgs);
+  const data = getResolveParimutuelV1InstructionDataSerializer().serialize({});
 
   // Bytes Created On Chain.
   const bytesCreatedOnChain = 0;

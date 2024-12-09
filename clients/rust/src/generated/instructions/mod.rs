@@ -6,7 +6,13 @@
 //!
 
 pub(crate) mod r#create_v1;
+pub(crate) mod r#resolve_legacy_amm_v1;
 pub(crate) mod r#resolve_p2p_v1;
+pub(crate) mod r#resolve_parimutuel_lulo_v1;
+pub(crate) mod r#resolve_parimutuel_v1;
 
 pub use self::r#create_v1::*;
+pub use self::r#resolve_legacy_amm_v1::*;
 pub use self::r#resolve_p2p_v1::*;
+pub use self::r#resolve_parimutuel_lulo_v1::*;
+pub use self::r#resolve_parimutuel_v1::*;

@@ -5,7 +5,7 @@
 //! <https://github.com/codama-idl/codama>
 //!
 
-use crate::generated::types::AccountType;
+use crate::generated::types::{AccountType, MarketProgram};
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::pubkey::Pubkey;
 
@@ -17,10 +17,11 @@ pub struct ResolverV1 {
     pub market: Pubkey,
     #[cfg_attr(feature = "serde", serde(with = "serde_with::As::<serde_with::DisplayFromStr>"))]
     pub request: Pubkey,
+    pub program: MarketProgram,
 }
 
 impl ResolverV1 {
-    pub const LEN: usize = 65;
+    pub const LEN: usize = 66;
 
     /// Prefix values used to generate a PDA for this account.
     ///

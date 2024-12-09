@@ -6,5 +6,7 @@
 //!
 
 pub(crate) mod r#account_type;
+pub(crate) mod r#market_program;
 
 pub use self::r#account_type::*;
+pub use self::r#market_program::*;

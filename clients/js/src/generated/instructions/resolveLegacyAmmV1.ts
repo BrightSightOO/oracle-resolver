@@ -7,8 +7,7 @@
  */
 
 import type { ResolvedAccount, ResolvedAccountsWithIndices } from "../shared";
-import type { MarketProgram, MarketProgramArgs } from "../types";
-import type { Context, Pda, PublicKey, Signer, TransactionBuilder } from "@metaplex-foundation/umi";
+import type { Context, Pda, PublicKey, TransactionBuilder } from "@metaplex-foundation/umi";
 import type { Serializer } from "@metaplex-foundation/umi/serializers";
 
 import { transactionBuilder } from "@metaplex-foundation/umi";
@@ -16,53 +15,44 @@ import { mapSerializer, struct, u8 } from "@metaplex-foundation/umi/serializers"
 
 import { findResolverV1Pda } from "../accounts";
 import { expectPublicKey, getAccountMetasAndSigners } from "../shared";
-import { getMarketProgramSerializer } from "../types";
 
 // Accounts.
-export type CreateV1InstructionAccounts = {
+export type ResolveLegacyAmmV1InstructionAccounts = {
   /** Resolver */
   resolver?: PublicKey | Pda;
   /** Market */
   market: PublicKey | Pda;
   /** Oracle request */
   request: PublicKey | Pda;
-  /** Payer */
-  payer?: Signer;
-  /** System program */
-  systemProgram?: PublicKey | Pda;
+  /** Legacy outcome tokens program */
+  outcomeTokensProgram: PublicKey | Pda;
 };
 
 // Data.
-export type CreateV1InstructionData = {
-  discriminator: number;
-  program: MarketProgram;
-};
+export type ResolveLegacyAmmV1InstructionData = { discriminator: number };
 
-export type CreateV1InstructionDataArgs = { program: MarketProgramArgs };
+export type ResolveLegacyAmmV1InstructionDataArgs = {};
 
-export function getCreateV1InstructionDataSerializer(): Serializer<
-  CreateV1InstructionDataArgs,
-  CreateV1InstructionData
+export function getResolveLegacyAmmV1InstructionDataSerializer(): Serializer<
+  ResolveLegacyAmmV1InstructionDataArgs,
+  ResolveLegacyAmmV1InstructionData
 > {
-  return mapSerializer<CreateV1InstructionDataArgs, any, CreateV1InstructionData>(
-    struct<CreateV1InstructionData>(
-      [
-        ["discriminator", u8()],
-        ["program", getMarketProgramSerializer()],
-      ],
-      { description: "CreateV1InstructionData" },
-    ),
-    (value) => ({ ...value, discriminator: 0 }),
+  return mapSerializer<
+    ResolveLegacyAmmV1InstructionDataArgs,
+    any,
+    ResolveLegacyAmmV1InstructionData
+  >(
+    struct<ResolveLegacyAmmV1InstructionData>([["discriminator", u8()]], {
+      description: "ResolveLegacyAmmV1InstructionData",
+    }),
+    (value) => ({ ...value, discriminator: 2 }),
   );
 }
 
-// Args.
-export type CreateV1InstructionArgs = CreateV1InstructionDataArgs;
-
 // Instruction.
-export function createV1(
-  context: Pick<Context, "eddsa" | "payer" | "programs">,
-  input: CreateV1InstructionAccounts & CreateV1InstructionArgs,
+export function resolveLegacyAmmV1(
+  context: Pick<Context, "eddsa" | "programs">,
+  input: ResolveLegacyAmmV1InstructionAccounts,
 ): TransactionBuilder {
   // Program ID.
   const programId = context.programs.getPublicKey(
@@ -74,12 +64,12 @@ export function createV1(
   const resolvedAccounts = {
     resolver: {
       index: 0,
-      isWritable: true as boolean,
+      isWritable: false as boolean,
       value: input.resolver ?? null,
     },
     market: {
       index: 1,
-      isWritable: false as boolean,
+      isWritable: true as boolean,
       value: input.market ?? null,
     },
     request: {
@@ -87,20 +77,12 @@ export function createV1(
       isWritable: false as boolean,
       value: input.request ?? null,
     },
-    payer: {
+    outcomeTokensProgram: {
       index: 3,
-      isWritable: true as boolean,
-      value: input.payer ?? null,
-    },
-    systemProgram: {
-      index: 4,
       isWritable: false as boolean,
-      value: input.systemProgram ?? null,
+      value: input.outcomeTokensProgram ?? null,
     },
   } satisfies ResolvedAccountsWithIndices;
-
-  // Arguments.
-  const resolvedArgs: CreateV1InstructionArgs = { ...input };
 
   // Default values.
   if (!resolvedAccounts.resolver.value) {
@@ -108,16 +90,6 @@ export function createV1(
       market: expectPublicKey(resolvedAccounts.market.value),
       request: expectPublicKey(resolvedAccounts.request.value),
     });
-  }
-  if (!resolvedAccounts.payer.value) {
-    resolvedAccounts.payer.value = context.payer;
-  }
-  if (!resolvedAccounts.systemProgram.value) {
-    resolvedAccounts.systemProgram.value = context.programs.getPublicKey(
-      "splSystem",
-      "11111111111111111111111111111111",
-    );
-    resolvedAccounts.systemProgram.isWritable = false;
   }
 
   // Accounts in order.
@@ -129,7 +101,7 @@ export function createV1(
   const [keys, signers] = getAccountMetasAndSigners(orderedAccounts, "programId", programId);
 
   // Data.
-  const data = getCreateV1InstructionDataSerializer().serialize(resolvedArgs);
+  const data = getResolveLegacyAmmV1InstructionDataSerializer().serialize({});
 
   // Bytes Created On Chain.
   const bytesCreatedOnChain = 0;

@@ -6,7 +6,7 @@
  * @see https://github.com/codama-idl/codama
  */
 
-import type { AccountTypeArgs } from "../types";
+import type { AccountTypeArgs, MarketProgram, MarketProgramArgs } from "../types";
 import type {
   Account,
   Context,
@@ -31,7 +31,7 @@ import {
   struct,
 } from "@metaplex-foundation/umi/serializers";
 
-import { AccountType, getAccountTypeSerializer } from "../types";
+import { AccountType, getAccountTypeSerializer, getMarketProgramSerializer } from "../types";
 
 export type ResolverV1 = Account<ResolverV1AccountData>;
 
@@ -39,11 +39,13 @@ export type ResolverV1AccountData = {
   accountType: AccountType;
   market: PublicKey;
   request: PublicKey;
+  program: MarketProgram;
 };
 
 export type ResolverV1AccountDataArgs = {
   market: PublicKey;
   request: PublicKey;
+  program: MarketProgramArgs;
 };
 
 export function getResolverV1AccountDataSerializer(): Serializer<
@@ -56,6 +58,7 @@ export function getResolverV1AccountDataSerializer(): Serializer<
         ["accountType", getAccountTypeSerializer()],
         ["market", publicKeySerializer()],
         ["request", publicKeySerializer()],
+        ["program", getMarketProgramSerializer()],
       ],
       { description: "ResolverV1AccountData" },
     ),
@@ -125,17 +128,19 @@ export function getResolverV1GpaBuilder(context: Pick<Context, "rpc" | "programs
       accountType: AccountTypeArgs;
       market: PublicKey;
       request: PublicKey;
+      program: MarketProgramArgs;
     }>({
       accountType: [0, getAccountTypeSerializer()],
       market: [1, publicKeySerializer()],
       request: [33, publicKeySerializer()],
+      program: [65, getMarketProgramSerializer()],
     })
     .deserializeUsing<ResolverV1>((account) => deserializeResolverV1(account))
     .whereField("accountType", AccountType.ResolverV1);
 }
 
 export function getResolverV1Size(): number {
-  return 65;
+  return 66;
 }
 
 export function findResolverV1Pda(

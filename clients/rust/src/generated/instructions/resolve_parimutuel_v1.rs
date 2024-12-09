@@ -5,49 +5,60 @@
 //! <https://github.com/codama-idl/codama>
 //!
 
-use crate::generated::types::MarketProgram;
 use borsh::{BorshDeserialize, BorshSerialize};
 
 /// Accounts.
-pub struct CreateV1 {
+pub struct ResolveParimutuelV1 {
     /// Resolver
     pub resolver: solana_program::pubkey::Pubkey,
     /// Market
     pub market: solana_program::pubkey::Pubkey,
     /// Oracle request
     pub request: solana_program::pubkey::Pubkey,
+    /// Deposit token mint
+    pub mint: solana_program::pubkey::Pubkey,
+    /// Deposit token account
+    pub deposit: solana_program::pubkey::Pubkey,
     /// Payer
     pub payer: solana_program::pubkey::Pubkey,
+    /// SPL token program
+    pub token_program: solana_program::pubkey::Pubkey,
     /// System program
     pub system_program: solana_program::pubkey::Pubkey,
+    /// HPL parimutuel program
+    pub parimutuel_program: solana_program::pubkey::Pubkey,
 }
 
-impl CreateV1 {
-    pub fn instruction(
-        &self,
-        args: CreateV1InstructionArgs,
-    ) -> solana_program::instruction::Instruction {
-        self.instruction_with_remaining_accounts(args, &[])
+impl ResolveParimutuelV1 {
+    pub fn instruction(&self) -> solana_program::instruction::Instruction {
+        self.instruction_with_remaining_accounts(&[])
     }
     #[allow(clippy::vec_init_then_push)]
     pub fn instruction_with_remaining_accounts(
         &self,
-        args: CreateV1InstructionArgs,
         remaining_accounts: &[solana_program::instruction::AccountMeta],
     ) -> solana_program::instruction::Instruction {
-        let mut accounts = Vec::with_capacity(5 + remaining_accounts.len());
-        accounts.push(solana_program::instruction::AccountMeta::new(self.resolver, false));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(self.market, false));
+        let mut accounts = Vec::with_capacity(9 + remaining_accounts.len());
+        accounts.push(solana_program::instruction::AccountMeta::new_readonly(self.resolver, false));
+        accounts.push(solana_program::instruction::AccountMeta::new(self.market, false));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(self.request, false));
+        accounts.push(solana_program::instruction::AccountMeta::new_readonly(self.mint, false));
+        accounts.push(solana_program::instruction::AccountMeta::new(self.deposit, false));
         accounts.push(solana_program::instruction::AccountMeta::new(self.payer, true));
+        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            self.token_program,
+            false,
+        ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             self.system_program,
             false,
         ));
+        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            self.parimutuel_program,
+            false,
+        ));
         accounts.extend_from_slice(remaining_accounts);
-        let mut data = CreateV1InstructionData::new().try_to_vec().unwrap();
-        let mut args = args.try_to_vec().unwrap();
-        data.append(&mut args);
+        let data = ResolveParimutuelV1InstructionData::new().try_to_vec().unwrap();
 
         solana_program::instruction::Instruction {
             program_id: crate::ORACLE_RESOLVER_ID,
@@ -58,49 +69,50 @@ impl CreateV1 {
 }
 
 #[derive(BorshDeserialize, BorshSerialize)]
-pub struct CreateV1InstructionData {
+pub struct ResolveParimutuelV1InstructionData {
     discriminator: u8,
 }
 
-impl CreateV1InstructionData {
+impl ResolveParimutuelV1InstructionData {
     pub fn new() -> Self {
-        Self { discriminator: 0 }
+        Self { discriminator: 3 }
     }
 }
 
-impl Default for CreateV1InstructionData {
+impl Default for ResolveParimutuelV1InstructionData {
     fn default() -> Self {
         Self::new()
     }
 }
 
-#[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct CreateV1InstructionArgs {
-    pub program: MarketProgram,
-}
-
-/// Instruction builder for `CreateV1`.
+/// Instruction builder for `ResolveParimutuelV1`.
 ///
 /// ### Accounts:
 ///
-///   0. `[writable]` resolver
-///   1. `[]` market
+///   0. `[]` resolver
+///   1. `[writable]` market
 ///   2. `[]` request
-///   3. `[writable, signer]` payer
-///   4. `[optional]` system_program (default to `11111111111111111111111111111111`)
+///   3. `[]` mint
+///   4. `[writable]` deposit
+///   5. `[writable, signer]` payer
+///   6. `[optional]` token_program (default to `TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA`)
+///   7. `[optional]` system_program (default to `11111111111111111111111111111111`)
+///   8. `[]` parimutuel_program
 #[derive(Clone, Debug, Default)]
-pub struct CreateV1Builder {
+pub struct ResolveParimutuelV1Builder {
     resolver: Option<solana_program::pubkey::Pubkey>,
     market: Option<solana_program::pubkey::Pubkey>,
     request: Option<solana_program::pubkey::Pubkey>,
+    mint: Option<solana_program::pubkey::Pubkey>,
+    deposit: Option<solana_program::pubkey::Pubkey>,
     payer: Option<solana_program::pubkey::Pubkey>,
+    token_program: Option<solana_program::pubkey::Pubkey>,
     system_program: Option<solana_program::pubkey::Pubkey>,
-    program: Option<MarketProgram>,
+    parimutuel_program: Option<solana_program::pubkey::Pubkey>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
-impl CreateV1Builder {
+impl ResolveParimutuelV1Builder {
     pub fn new() -> Self {
         Self::default()
     }
@@ -122,10 +134,29 @@ impl CreateV1Builder {
         self.request = Some(request);
         self
     }
+    /// Deposit token mint
+    #[inline(always)]
+    pub fn mint(&mut self, mint: solana_program::pubkey::Pubkey) -> &mut Self {
+        self.mint = Some(mint);
+        self
+    }
+    /// Deposit token account
+    #[inline(always)]
+    pub fn deposit(&mut self, deposit: solana_program::pubkey::Pubkey) -> &mut Self {
+        self.deposit = Some(deposit);
+        self
+    }
     /// Payer
     #[inline(always)]
     pub fn payer(&mut self, payer: solana_program::pubkey::Pubkey) -> &mut Self {
         self.payer = Some(payer);
+        self
+    }
+    /// `[optional account, default to 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA']`
+    /// SPL token program
+    #[inline(always)]
+    pub fn token_program(&mut self, token_program: solana_program::pubkey::Pubkey) -> &mut Self {
+        self.token_program = Some(token_program);
         self
     }
     /// `[optional account, default to '11111111111111111111111111111111']`
@@ -135,9 +166,13 @@ impl CreateV1Builder {
         self.system_program = Some(system_program);
         self
     }
+    /// HPL parimutuel program
     #[inline(always)]
-    pub fn program(&mut self, program: MarketProgram) -> &mut Self {
-        self.program = Some(program);
+    pub fn parimutuel_program(
+        &mut self,
+        parimutuel_program: solana_program::pubkey::Pubkey,
+    ) -> &mut Self {
+        self.parimutuel_program = Some(parimutuel_program);
         self
     }
     /// Add an additional account to the instruction.
@@ -160,38 +195,50 @@ impl CreateV1Builder {
     }
     #[allow(clippy::clone_on_copy)]
     pub fn instruction(&self) -> solana_program::instruction::Instruction {
-        let accounts = CreateV1 {
+        let accounts = ResolveParimutuelV1 {
             resolver: self.resolver.expect("resolver is not set"),
             market: self.market.expect("market is not set"),
             request: self.request.expect("request is not set"),
+            mint: self.mint.expect("mint is not set"),
+            deposit: self.deposit.expect("deposit is not set"),
             payer: self.payer.expect("payer is not set"),
+            token_program: self
+                .token_program
+                .unwrap_or(solana_program::pubkey!("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")),
             system_program: self
                 .system_program
                 .unwrap_or(solana_program::pubkey!("11111111111111111111111111111111")),
+            parimutuel_program: self.parimutuel_program.expect("parimutuel_program is not set"),
         };
-        let args =
-            CreateV1InstructionArgs { program: self.program.clone().expect("program is not set") };
 
-        accounts.instruction_with_remaining_accounts(args, &self.__remaining_accounts)
+        accounts.instruction_with_remaining_accounts(&self.__remaining_accounts)
     }
 }
 
-/// `create_v1` CPI accounts.
-pub struct CreateV1CpiAccounts<'a, 'b> {
+/// `resolve_parimutuel_v1` CPI accounts.
+pub struct ResolveParimutuelV1CpiAccounts<'a, 'b> {
     /// Resolver
     pub resolver: &'b solana_program::account_info::AccountInfo<'a>,
     /// Market
     pub market: &'b solana_program::account_info::AccountInfo<'a>,
     /// Oracle request
     pub request: &'b solana_program::account_info::AccountInfo<'a>,
+    /// Deposit token mint
+    pub mint: &'b solana_program::account_info::AccountInfo<'a>,
+    /// Deposit token account
+    pub deposit: &'b solana_program::account_info::AccountInfo<'a>,
     /// Payer
     pub payer: &'b solana_program::account_info::AccountInfo<'a>,
+    /// SPL token program
+    pub token_program: &'b solana_program::account_info::AccountInfo<'a>,
     /// System program
     pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
+    /// HPL parimutuel program
+    pub parimutuel_program: &'b solana_program::account_info::AccountInfo<'a>,
 }
 
-/// `create_v1` CPI instruction.
-pub struct CreateV1Cpi<'a, 'b> {
+/// `resolve_parimutuel_v1` CPI instruction.
+pub struct ResolveParimutuelV1Cpi<'a, 'b> {
     /// The program to invoke.
     pub __program: &'b solana_program::account_info::AccountInfo<'a>,
     /// Resolver
@@ -200,28 +247,36 @@ pub struct CreateV1Cpi<'a, 'b> {
     pub market: &'b solana_program::account_info::AccountInfo<'a>,
     /// Oracle request
     pub request: &'b solana_program::account_info::AccountInfo<'a>,
+    /// Deposit token mint
+    pub mint: &'b solana_program::account_info::AccountInfo<'a>,
+    /// Deposit token account
+    pub deposit: &'b solana_program::account_info::AccountInfo<'a>,
     /// Payer
     pub payer: &'b solana_program::account_info::AccountInfo<'a>,
+    /// SPL token program
+    pub token_program: &'b solana_program::account_info::AccountInfo<'a>,
     /// System program
     pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The arguments for the instruction.
-    pub __args: CreateV1InstructionArgs,
+    /// HPL parimutuel program
+    pub parimutuel_program: &'b solana_program::account_info::AccountInfo<'a>,
 }
 
-impl<'a, 'b> CreateV1Cpi<'a, 'b> {
+impl<'a, 'b> ResolveParimutuelV1Cpi<'a, 'b> {
     pub fn new(
         program: &'b solana_program::account_info::AccountInfo<'a>,
-        accounts: CreateV1CpiAccounts<'a, 'b>,
-        args: CreateV1InstructionArgs,
+        accounts: ResolveParimutuelV1CpiAccounts<'a, 'b>,
     ) -> Self {
         Self {
             __program: program,
             resolver: accounts.resolver,
             market: accounts.market,
             request: accounts.request,
+            mint: accounts.mint,
+            deposit: accounts.deposit,
             payer: accounts.payer,
+            token_program: accounts.token_program,
             system_program: accounts.system_program,
-            __args: args,
+            parimutuel_program: accounts.parimutuel_program,
         }
     }
     #[inline(always)]
@@ -249,15 +304,28 @@ impl<'a, 'b> CreateV1Cpi<'a, 'b> {
         signers_seeds: &[&[&[u8]]],
         remaining_accounts: &[(&'b solana_program::account_info::AccountInfo<'a>, bool, bool)],
     ) -> solana_program::entrypoint::ProgramResult {
-        let mut accounts = Vec::with_capacity(5 + remaining_accounts.len());
-        accounts.push(solana_program::instruction::AccountMeta::new(*self.resolver.key, false));
-        accounts
-            .push(solana_program::instruction::AccountMeta::new_readonly(*self.market.key, false));
+        let mut accounts = Vec::with_capacity(9 + remaining_accounts.len());
+        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            *self.resolver.key,
+            false,
+        ));
+        accounts.push(solana_program::instruction::AccountMeta::new(*self.market.key, false));
         accounts
             .push(solana_program::instruction::AccountMeta::new_readonly(*self.request.key, false));
+        accounts
+            .push(solana_program::instruction::AccountMeta::new_readonly(*self.mint.key, false));
+        accounts.push(solana_program::instruction::AccountMeta::new(*self.deposit.key, false));
         accounts.push(solana_program::instruction::AccountMeta::new(*self.payer.key, true));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            *self.token_program.key,
+            false,
+        ));
+        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             *self.system_program.key,
+            false,
+        ));
+        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            *self.parimutuel_program.key,
             false,
         ));
         remaining_accounts.iter().for_each(|remaining_account| {
@@ -267,22 +335,24 @@ impl<'a, 'b> CreateV1Cpi<'a, 'b> {
                 is_writable: remaining_account.2,
             })
         });
-        let mut data = CreateV1InstructionData::new().try_to_vec().unwrap();
-        let mut args = self.__args.try_to_vec().unwrap();
-        data.append(&mut args);
+        let data = ResolveParimutuelV1InstructionData::new().try_to_vec().unwrap();
 
         let instruction = solana_program::instruction::Instruction {
             program_id: crate::ORACLE_RESOLVER_ID,
             accounts,
             data,
         };
-        let mut account_infos = Vec::with_capacity(6 + remaining_accounts.len());
+        let mut account_infos = Vec::with_capacity(10 + remaining_accounts.len());
         account_infos.push(self.__program.clone());
         account_infos.push(self.resolver.clone());
         account_infos.push(self.market.clone());
         account_infos.push(self.request.clone());
+        account_infos.push(self.mint.clone());
+        account_infos.push(self.deposit.clone());
         account_infos.push(self.payer.clone());
+        account_infos.push(self.token_program.clone());
         account_infos.push(self.system_program.clone());
+        account_infos.push(self.parimutuel_program.clone());
         remaining_accounts
             .iter()
             .for_each(|remaining_account| account_infos.push(remaining_account.0.clone()));
@@ -295,30 +365,37 @@ impl<'a, 'b> CreateV1Cpi<'a, 'b> {
     }
 }
 
-/// Instruction builder for `CreateV1` via CPI.
+/// Instruction builder for `ResolveParimutuelV1` via CPI.
 ///
 /// ### Accounts:
 ///
-///   0. `[writable]` resolver
-///   1. `[]` market
+///   0. `[]` resolver
+///   1. `[writable]` market
 ///   2. `[]` request
-///   3. `[writable, signer]` payer
-///   4. `[]` system_program
+///   3. `[]` mint
+///   4. `[writable]` deposit
+///   5. `[writable, signer]` payer
+///   6. `[]` token_program
+///   7. `[]` system_program
+///   8. `[]` parimutuel_program
 #[derive(Clone, Debug)]
-pub struct CreateV1CpiBuilder<'a, 'b> {
-    instruction: Box<CreateV1CpiBuilderInstruction<'a, 'b>>,
+pub struct ResolveParimutuelV1CpiBuilder<'a, 'b> {
+    instruction: Box<ResolveParimutuelV1CpiBuilderInstruction<'a, 'b>>,
 }
 
-impl<'a, 'b> CreateV1CpiBuilder<'a, 'b> {
+impl<'a, 'b> ResolveParimutuelV1CpiBuilder<'a, 'b> {
     pub fn new(program: &'b solana_program::account_info::AccountInfo<'a>) -> Self {
-        let instruction = Box::new(CreateV1CpiBuilderInstruction {
+        let instruction = Box::new(ResolveParimutuelV1CpiBuilderInstruction {
             __program: program,
             resolver: None,
             market: None,
             request: None,
+            mint: None,
+            deposit: None,
             payer: None,
+            token_program: None,
             system_program: None,
-            program: None,
+            parimutuel_program: None,
             __remaining_accounts: Vec::new(),
         });
         Self { instruction }
@@ -350,10 +427,34 @@ impl<'a, 'b> CreateV1CpiBuilder<'a, 'b> {
         self.instruction.request = Some(request);
         self
     }
+    /// Deposit token mint
+    #[inline(always)]
+    pub fn mint(&mut self, mint: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
+        self.instruction.mint = Some(mint);
+        self
+    }
+    /// Deposit token account
+    #[inline(always)]
+    pub fn deposit(
+        &mut self,
+        deposit: &'b solana_program::account_info::AccountInfo<'a>,
+    ) -> &mut Self {
+        self.instruction.deposit = Some(deposit);
+        self
+    }
     /// Payer
     #[inline(always)]
     pub fn payer(&mut self, payer: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
         self.instruction.payer = Some(payer);
+        self
+    }
+    /// SPL token program
+    #[inline(always)]
+    pub fn token_program(
+        &mut self,
+        token_program: &'b solana_program::account_info::AccountInfo<'a>,
+    ) -> &mut Self {
+        self.instruction.token_program = Some(token_program);
         self
     }
     /// System program
@@ -365,9 +466,13 @@ impl<'a, 'b> CreateV1CpiBuilder<'a, 'b> {
         self.instruction.system_program = Some(system_program);
         self
     }
+    /// HPL parimutuel program
     #[inline(always)]
-    pub fn program(&mut self, program: MarketProgram) -> &mut Self {
-        self.instruction.program = Some(program);
+    pub fn parimutuel_program(
+        &mut self,
+        parimutuel_program: &'b solana_program::account_info::AccountInfo<'a>,
+    ) -> &mut Self {
+        self.instruction.parimutuel_program = Some(parimutuel_program);
         self
     }
     /// Add an additional account to the instruction.
@@ -403,10 +508,7 @@ impl<'a, 'b> CreateV1CpiBuilder<'a, 'b> {
         &self,
         signers_seeds: &[&[&[u8]]],
     ) -> solana_program::entrypoint::ProgramResult {
-        let args = CreateV1InstructionArgs {
-            program: self.instruction.program.clone().expect("program is not set"),
-        };
-        let instruction = CreateV1Cpi {
+        let instruction = ResolveParimutuelV1Cpi {
             __program: self.instruction.__program,
 
             resolver: self.instruction.resolver.expect("resolver is not set"),
@@ -415,10 +517,20 @@ impl<'a, 'b> CreateV1CpiBuilder<'a, 'b> {
 
             request: self.instruction.request.expect("request is not set"),
 
+            mint: self.instruction.mint.expect("mint is not set"),
+
+            deposit: self.instruction.deposit.expect("deposit is not set"),
+
             payer: self.instruction.payer.expect("payer is not set"),
 
+            token_program: self.instruction.token_program.expect("token_program is not set"),
+
             system_program: self.instruction.system_program.expect("system_program is not set"),
-            __args: args,
+
+            parimutuel_program: self
+                .instruction
+                .parimutuel_program
+                .expect("parimutuel_program is not set"),
         };
         instruction.invoke_signed_with_remaining_accounts(
             signers_seeds,
@@ -428,14 +540,17 @@ impl<'a, 'b> CreateV1CpiBuilder<'a, 'b> {
 }
 
 #[derive(Clone, Debug)]
-struct CreateV1CpiBuilderInstruction<'a, 'b> {
+struct ResolveParimutuelV1CpiBuilderInstruction<'a, 'b> {
     __program: &'b solana_program::account_info::AccountInfo<'a>,
     resolver: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     market: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     request: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    mint: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    deposit: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    token_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    program: Option<MarketProgram>,
+    parimutuel_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
     __remaining_accounts: Vec<(&'b solana_program::account_info::AccountInfo<'a>, bool, bool)>,
 }
