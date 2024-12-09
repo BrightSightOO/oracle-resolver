@@ -24,4 +24,11 @@ pub(crate) enum ResolverInstruction {
     #[account(2, name = "request", desc = "Oracle request")]
     #[account(3, name = "p2p_program", desc = "HPL P2P program")]
     ResolveP2pV1,
+
+    /// Resolves a legacy AMM market with the value from the request.
+    #[account(0, name = "resolver", desc = "Resolver")]
+    #[account(1, writable, name = "market", desc = "Market")]
+    #[account(2, name = "request", desc = "Oracle request")]
+    #[account(3, name = "outcome_tokens_program", desc = "Legacy outcome tokens program")]
+    ResolveLegacyAmmV1,
 }

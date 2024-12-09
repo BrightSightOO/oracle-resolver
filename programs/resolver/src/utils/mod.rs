@@ -30,3 +30,14 @@ impl From<YesNo> for cpi::hpl::p2p::Outcome {
         }
     }
 }
+
+impl From<YesNo> for cpi::legacy::amm::Outcome {
+    #[inline]
+    fn from(value: YesNo) -> Self {
+        match value {
+            YesNo::Yes => Self::Yes,
+            YesNo::No => Self::No,
+            YesNo::Invalid => Self::Invalid,
+        }
+    }
+}

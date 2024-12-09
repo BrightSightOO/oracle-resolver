@@ -3,6 +3,8 @@ use std::process::{Command, Output};
 use std::{env, fmt};
 
 fn main() {
+    println!("cargo:rustc-check-cfg=cfg(target_os, values(\"solana\"))");
+
     let output =
         Command::new("pnpm").arg("generate:idls").output().expect("failed to generate idls");
 

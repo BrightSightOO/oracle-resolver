@@ -11,6 +11,9 @@ crate-type = ["cdylib", "lib"]
 [features]
 no-entrypoint = []
 
+custom-heap = []
+custom-panic = []
+
 [dependencies]
 cpi = { workspace = true }
 optimistic-oracle = { workspace = true }

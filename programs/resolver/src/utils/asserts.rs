@@ -23,6 +23,8 @@ macro_rules! programs {
 programs! {
     "P2P": assert_p2p_program(cpi::hpl::p2p::ID);
 
+    "outcome tokens": assert_outcome_tokens_program(cpi::legacy::amm::OUTCOME_TOKENS_ID);
+
     "token": assert_token_program(cpi::spl::TOKEN_ID, cpi::spl::TOKEN_2022_ID);
     "system": assert_system_program(system_program::ID);
 }
